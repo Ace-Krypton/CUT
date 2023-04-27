@@ -7,7 +7,7 @@
 #include <memory>
 #include <condition_variable>
 
-template<typename T>
+template<class T>
 class TBuffer {
 public:
     explicit TBuffer(std::size_t size) : _buffer(size), _count(0), _head(0), _tail(0) { };
@@ -20,8 +20,8 @@ private:
     std::size_t _head;
     std::size_t _tail;
     std::size_t _count;
-    std::condition_variable _not_full;
-    std::condition_variable _not_empty;
+    std::condition_variable _cond_full;
+    std::condition_variable _cond_empty;
     std::vector<std::unique_ptr<T>> _buffer;
 };
 
