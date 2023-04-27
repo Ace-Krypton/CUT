@@ -1,6 +1,10 @@
 #pragma once
 #include "../include/TBuffer.hpp"
 
+/**
+ * @brief Inserts an element into the buffer
+ * @param value The value to be inserted
+ */
 template<class T>
 auto TBuffer<T>::push(T value) -> void {
     std::unique_lock<std::mutex> lock(_mutex);
@@ -21,7 +25,7 @@ auto TBuffer<T>::push(T value) -> void {
 template<class T>
 auto TBuffer<T>::pop() -> std::unique_ptr<T> {
     std::unique_lock<std::mutex> lock(_mutex);
-    _not_empty.wait(lock, [this](){ return _count != 0; });
+    _not_empty.wait(lock, [this]() { return _count != 0; });
     auto item = std::move(_buffer[_head]);
     _head = (_head + 1) % _buffer.size();
     --_count;
