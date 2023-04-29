@@ -8,7 +8,7 @@ template<class T>
 auto TBuffer<T>::push(T value) -> void {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_full.wait(lock, [this]() { return _count != _buffer.size(); });
-    _buffer[_tail] = std::make_unique<T>(std::move(value));
+    _buffer[_tail] = std::make_unique<T>(std::forward<T>(value));
     _tail = (_tail + 1) % _buffer.size();
     ++_count;
     lock.unlock();

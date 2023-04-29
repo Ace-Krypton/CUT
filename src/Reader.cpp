@@ -31,7 +31,8 @@ auto Reader::read_data() -> void {
     const std::size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
-    while (!_exit_flag.load()) {
+    for (int a = 0; a < 5; ++a) {
+        std::cout << "Inside while loop" << std::endl;
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
@@ -42,16 +43,20 @@ auto Reader::read_data() -> void {
         }
 
         std::getline(file, value);
+        std::cout << "Read value: " << value << std::endl;
 
         for (std::size_t i = 0; i < cpus; ++i) {
             std::getline(file, value);
             _analyzer_buffer->push(value);
         }
+        std::cout << "TILL HERE" << std::endl;
 
         file.close();
         std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
     }
+
     _analyzer_buffer->push("Reader Finished");
+    std::cout << "READER FINISHED" << std::endl;
 }
 
 auto Reader::start() -> void {

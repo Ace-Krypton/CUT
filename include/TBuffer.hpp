@@ -12,9 +12,9 @@ class TBuffer {
 public:
     explicit TBuffer(std::size_t size) : _buffer(size), _count(0), _head(0), _tail(0) { };
 
+    auto empty() -> bool;
     auto push(T value) -> void;
     auto pop() -> std::unique_ptr<T>;
-    auto empty() -> bool;
 
 private:
     std::mutex _mutex;
