@@ -1,8 +1,8 @@
 #include "../include/TBuffer.hpp"
 
 /**
- * @brief Inserts an element into the buffer
- * @param value The value to be inserted
+ * @brief Inserts an element into the buffer.
+ * @param value The value to be inserted.
  */
 template<class T>
 auto TBuffer<T>::push(T value) -> void {

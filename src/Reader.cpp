@@ -1,5 +1,9 @@
 #include "../include/Reader.hpp"
 
+/**
+ * @brief Returns the number of available CPUs on the system.
+ * @return The number of available CPUs as a size_t value.
+ */
 auto Reader::get_num_cpus() -> size_t {
 #ifdef _SC_NPROCESSORS_ONLN
     long num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
@@ -25,14 +29,16 @@ auto Reader::get_num_cpus() -> size_t {
     return cpu_count - 1;
 }
 
+/**
+ * @brief Reads data from "/proc/stat" and pushes it onto the analyzer buffer.
+ */
 auto Reader::read_data() -> void {
     std::string value;
 
-    const std::size_t cpus = get_num_cpus();
+    const size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
     for (int a = 0; a < 5; ++a) {
-        std::cout << "Inside while loop" << std::endl;
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
@@ -43,26 +49,29 @@ auto Reader::read_data() -> void {
         }
 
         std::getline(file, value);
-        std::cout << "Read value: " << value << std::endl;
 
         for (std::size_t i = 0; i < cpus; ++i) {
             std::getline(file, value);
             _analyzer_buffer->push(value);
         }
-        std::cout << "TILL HERE" << std::endl;
 
         file.close();
         std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
     }
 
     _analyzer_buffer->push("Reader Finished");
-    std::cout << "READER FINISHED" << std::endl;
 }
 
+/**
+ * @brief Starts the Reader thread.
+ */
 auto Reader::start() -> void {
     _thread = std::thread(&Reader::read_data, this);
 }
 
+/**
+ * @brief Stops the Reader thread.
+ */
 auto Reader::stop() -> void {
     _exit_flag.store(true);
     if (_thread.joinable()) {
