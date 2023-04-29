@@ -3,31 +3,38 @@
 #include <iostream>
 
 #include "../include/TBuffer.hpp"
-
-auto producer(TBuffer<std::string>& buffer, std::size_t num_items) -> void {
-    for (std::size_t i = 0; i < num_items; ++i) {
-        std::string item = "Item " + std::to_string(i);
-        buffer.push(item);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
-auto consumer(TBuffer<std::string>& buffer, std::size_t num_items) -> void {
-    for (std::size_t i = 0; i < num_items; ++i) {
-        std::unique_ptr<std::string> item = buffer.pop();
-        std::cout << "Consumed item: " << *item << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-}
+#include "../include/Reader.hpp"
 
 auto main() -> std::int32_t {
-    TBuffer<std::string> buffer(5);
+    std::unique_ptr<TBuffer<std::string>> logger_buffer = std::make_unique<TBuffer<std::string>>(10);
+    std::unique_ptr<TBuffer<std::string>> analyzer_buffer = std::make_unique<TBuffer<std::string>>(10);
+    std::unique_ptr<TBuffer<std::size_t>> cpu_count_buffer = std::make_unique<TBuffer<std::size_t>>(10);
 
-    std::thread producer_thread(producer, std::ref(buffer), 10);
-    std::thread consumer_thread(consumer, std::ref(buffer), 10);
+    Reader reader(std::move(logger_buffer),
+                  std::move(analyzer_buffer),
+                  std::move(cpu_count_buffer));
 
-    producer_thread.join();
-    consumer_thread.join();
+    reader.start();
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    reader.stop();
+
+    std::cout << "Logger buffer:" << std::endl;
+    std::unique_ptr<TBuffer<std::string>> logger_buffer_copy = std::move(logger_buffer);
+    while (!logger_buffer_copy->empty()) {
+        std::cout << logger_buffer_copy->pop() << std::endl;
+    }
+
+    std::cout << "Analyzer buffer:" << std::endl;
+    std::unique_ptr<TBuffer<std::string>> analyzer_buffer_copy = std::move(analyzer_buffer);
+    while (!analyzer_buffer_copy->empty()) {
+        std::cout << analyzer_buffer_copy->pop() << std::endl;
+    }
+
+    std::cout << "CPU count buffer:" << std::endl;
+    std::unique_ptr<TBuffer<std::size_t>> cpu_count_buffer_copy = std::move(cpu_count_buffer);
+    while (!cpu_count_buffer_copy->empty()) {
+        std::cout << cpu_count_buffer_copy->pop() << std::endl;
+    }
 
     return 0;
 }

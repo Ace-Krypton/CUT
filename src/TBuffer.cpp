@@ -33,5 +33,16 @@ auto TBuffer<T>::pop() -> std::unique_ptr<T> {
     return item;
 }
 
+/**
+ * @brief Checks whether the buffer is empty.
+ * @return True if the buffer is empty, false otherwise.
+ */
+template<class T>
+auto TBuffer<T>::empty() -> bool {
+    std::unique_lock<std::mutex> lock(_mutex);
+    return _count == 0;
+}
+
 template class TBuffer<int>;
+template class TBuffer<std::size_t>;
 template class TBuffer<std::string>;

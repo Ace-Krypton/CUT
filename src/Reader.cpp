@@ -28,17 +28,30 @@ auto Reader::get_num_cpus() -> size_t {
 auto Reader::read_data() -> void {
     std::string value;
 
-    const size_t cpus = get_num_cpus();
+    const std::size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
     while (!_exit_flag.load()) {
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
-        if (!file) {
-            throw std::runtime_error("Failed to open file");
+        if (!file.is_open()) {
+            std::cerr << "Error: Could not open /proc/stat" << std::endl;
+            std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
+            continue;
         }
+
+        std::getline(file, value);
+
+        for (std::size_t i = 0; i < cpus; ++i) {
+            std::getline(file, value);
+            _analyzer_buffer->push(value);
+        }
+
+        file.close();
+        std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
     }
+    _analyzer_buffer->push("Reader Finished");
 }
 
 auto Reader::start() -> void {

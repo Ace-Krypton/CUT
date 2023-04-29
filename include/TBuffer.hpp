@@ -14,6 +14,7 @@ public:
 
     auto push(T value) -> void;
     auto pop() -> std::unique_ptr<T>;
+    auto empty() -> bool;
 
 private:
     std::mutex _mutex;
