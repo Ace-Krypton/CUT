@@ -20,7 +20,7 @@ auto consumer(TBuffer<std::string>& buffer, std::size_t num_items) -> void {
     }
 }
 
-auto main() -> int {
+auto main() -> std::int32_t {
     TBuffer<std::string> buffer(5);
 
     std::thread producer_thread(producer, std::ref(buffer), 10);
