@@ -1,6 +1,5 @@
 #ifndef CUT_TBUFFER_HPP
 #define CUT_TBUFFER_HPP
-#pragma once
 
 #include <mutex>
 #include <vector>

@@ -38,7 +38,7 @@ auto Reader::read_data() -> void {
     const size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
-    for (int a = 0; a < 5; ++a) {
+    while (true) {
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
