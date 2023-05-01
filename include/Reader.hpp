@@ -2,7 +2,9 @@
 #define CUT_READER_HPP
 
 #include <string>
+#include <vector>
 #include <thread>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 
@@ -15,7 +17,8 @@ public:
            const std::shared_ptr<TBuffer<std::size_t>>& cpu_count_buffer)
            : _logger_buffer(logger_buffer),
              _analyzer_buffer(analyzer_buffer),
-             _cpu_count_buffer(cpu_count_buffer) { }
+             _cpu_count_buffer(cpu_count_buffer),
+             _exit_flag(false) { }
 
     auto stop() -> void;
     auto start() -> void;
@@ -24,6 +27,7 @@ public:
 
 private:
     std::thread _thread;
+    std::mutex _analyzer_mutex;
     std::atomic<bool> _exit_flag { false };
     std::shared_ptr<TBuffer<std::string>> _logger_buffer;
     std::shared_ptr<TBuffer<std::string>> _analyzer_buffer;

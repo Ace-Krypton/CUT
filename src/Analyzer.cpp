@@ -1,47 +1,59 @@
 #include "../include/Analyzer.hpp"
 
+struct CPUData {
+    std::string cpu;
+
+    unsigned long long int user { };
+    unsigned long long int nice { };
+    unsigned long long int system { };
+    unsigned long long int idle { };
+    unsigned long long int iowait { };
+    unsigned long long int irq { };
+    unsigned long long int softirq { };
+    unsigned long long int steal { };
+    unsigned long long int guest { };
+    unsigned long long int guest_nice { };
+
+    [[nodiscard]] unsigned long long int get_total() const {
+        return user + nice + system + idle + iowait + irq + softirq + steal;
+    }
+};
+
 auto Analyzer::analyze_data() -> void {
-    std::string value;
+    while (!_exit_flag) {
+        std::unique_ptr<std::string> raw_data;
 
-    const size_t cpus = *_cpu_count_receive->pop();
-
-    std::vector<long long> prev_idle_times(cpus, 0);
-    std::vector<long long> prev_total_times(cpus, 0);
-
-    while (true) {
-        value = *_analyzer_receive->pop();
-
-        if (value == "Reader Finished") {
-            _printer_buffer->push("FINISHED");
-            break;
+        {
+            std::lock_guard<std::mutex> lock(_analyzer_mutex);
+            raw_data = _analyzer_receive->pop();
         }
 
-        std::stringstream ss(value);
-        std::string cpu_name;
-        long long user_time, nice_time, system_time,
-        idle_time, io_wait_time, irq_time, soft_irq_time;
+        std::stringstream ss(*raw_data);
 
-        ss >> cpu_name >> user_time >> nice_time >> system_time
-        >> idle_time >> io_wait_time >> irq_time >> soft_irq_time;
+        std::vector<CPUData> data;
+        std::string line;
 
-        if (cpu_name.find("cpu") == 0) {
-            size_t cpu_index = std::stoi(cpu_name.substr(3));
-            long long total_time = user_time + nice_time + system_time
-                    + idle_time + io_wait_time + irq_time + soft_irq_time;
+        while (std::getline(ss, line)) {
+            if (line.empty() || line.find("cpu") != 0) {
+                continue;
+            }
 
-            long long idle_time_diff = idle_time - prev_idle_times[cpu_index];
-            long long total_time_diff = total_time - prev_total_times[cpu_index];
-            double idle_percentage =
-                    static_cast<double>(idle_time_diff) / static_cast<double>(total_time_diff);
-            double usage_percentage = (1 - idle_percentage) * 100;
+            std::istringstream iss(line);
+            CPUData cpu_data;
+            iss >> cpu_data.cpu >> cpu_data.user >> cpu_data.nice >> cpu_data.system >> cpu_data.idle
+                >> cpu_data.iowait >> cpu_data.irq >> cpu_data.softirq >> cpu_data.steal
+                >> cpu_data.guest >> cpu_data.guest_nice;
+            data.push_back(cpu_data);
+        }
 
-            prev_idle_times[cpu_index] = idle_time;
-            prev_total_times[cpu_index] = total_time;
+        for (auto it = std::next(data.begin()); it != data.end(); ++it) {
+            double utilization = 100.0 *
+                                 (1.0 - (static_cast<double>(it->idle) / static_cast<double>(it->get_total())));
 
-            std::stringstream stream;
-            stream << std::fixed << std::setprecision(0) << usage_percentage;
-            std::string usage_str = stream.str();
-            _printer_buffer->push(usage_str);
+            std::stringstream _ss;
+            _ss << std::fixed << std::setprecision(1) << utilization;
+            std::string utilization_str = _ss.str();
+            std::cout << it->cpu + " utilization: " + utilization_str + "%" << std::endl;
         }
     }
 }

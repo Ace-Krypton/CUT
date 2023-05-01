@@ -33,12 +33,10 @@ auto Reader::get_num_cpus() -> size_t {
  * @brief Reads data from "/proc/stat" and pushes it onto the analyzer buffer.
  */
 auto Reader::read_data() -> void {
-    std::string value;
-
     const size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
-    while (true) {
+    while (!_exit_flag) {
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
@@ -48,24 +46,41 @@ auto Reader::read_data() -> void {
             continue;
         }
 
-        std::getline(file, value);
+        std::stringstream ss;
+        ss << file.rdbuf();
 
-        for (std::size_t i = 0; i < cpus; ++i) {
-            std::getline(file, value);
-            _analyzer_buffer->push(value);
+        std::string line;
+        std::stringstream data_ss;
+        while (std::getline(ss, line)) {
+            if (line.find("cpu0") == 0 ||
+                line.find("cpu1") == 0 ||
+                line.find("cpu2") == 0 ||
+                line.find("cpu3") == 0) {
+                data_ss << line << std::endl;
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(_analyzer_mutex);
+            std::string raw_data = data_ss.str();
+            _analyzer_buffer->push(raw_data);
         }
 
         file.close();
         std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
     }
 
-    _analyzer_buffer->push("Reader Finished");
+    {
+        std::lock_guard<std::mutex> lock(_analyzer_mutex);
+        _analyzer_buffer->push("Reader Finished");
+    }
 }
 
 /**
  * @brief Starts the Reader thread.
  */
 auto Reader::start() -> void {
+    std::cout << "STARTING" << std::endl;
     _thread = std::thread(&Reader::read_data, this);
 }
 
@@ -73,6 +88,7 @@ auto Reader::start() -> void {
  * @brief Stops the Reader thread.
  */
 auto Reader::stop() -> void {
+    std::cout << "CAME TO HERE" << std::endl;
     _exit_flag.store(true);
     if (_thread.joinable()) {
         _thread.join();

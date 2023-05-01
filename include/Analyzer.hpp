@@ -1,6 +1,7 @@
 #ifndef CUT_ANALYZER_HPP
 #define CUT_ANALYZER_HPP
 
+#include <array>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
@@ -11,7 +12,7 @@ class Analyzer {
 public:
     Analyzer(const std::shared_ptr<TBuffer<std::string>>& logger_buffer,
              const std::shared_ptr<TBuffer<std::string>>& analyzer_receive,
-             const std::shared_ptr<TBuffer<std::string>>& printer_buffer,
+             const std::shared_ptr<TBuffer<int>>& printer_buffer,
              const std::shared_ptr<TBuffer<std::size_t>>& cpu_count_receive)
             : _logger_buffer(logger_buffer),
               _analyzer_receive(analyzer_receive),
@@ -24,9 +25,10 @@ public:
 
 private:
     std::thread _thread;
+    std::mutex _analyzer_mutex;
     std::atomic<bool> _exit_flag { false };
     std::shared_ptr<TBuffer<std::string>> _logger_buffer;
-    std::shared_ptr<TBuffer<std::string>> _printer_buffer;
+    std::shared_ptr<TBuffer<int>> _printer_buffer;
     std::shared_ptr<TBuffer<std::string>> _analyzer_receive;
     std::shared_ptr<TBuffer<std::size_t>> _cpu_count_receive;
 };

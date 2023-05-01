@@ -9,7 +9,7 @@ auto main() -> int {
     std::shared_ptr<TBuffer<std::string>> logger_buffer = std::make_unique<TBuffer<std::string>>(20);
     std::shared_ptr<TBuffer<std::string>> analyzer_buffer = std::make_unique<TBuffer<std::string>>(30);
     std::shared_ptr<TBuffer<std::size_t>> cpu_count_buffer = std::make_unique<TBuffer<std::size_t>>(1);
-    std::shared_ptr<TBuffer<std::string>> printer_buffer = std::make_unique<TBuffer<std::string>>(30);
+    std::shared_ptr<TBuffer<int>> printer_buffer = std::make_unique<TBuffer<int>>(30);
 
     /// Creating reader thread
     Reader reader(logger_buffer, analyzer_buffer, cpu_count_buffer);
@@ -20,16 +20,16 @@ auto main() -> int {
 
     /// Starting and stopping the thread
     reader.start();
-    analyzer.start();
-    std::this_thread::sleep_for(std::chrono::seconds(20));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    //analyzer.start();
 
     /// Printing the printer buffer
-    while (!(printer_buffer->empty())) {
-        std::cout << "cpu: " << *printer_buffer->pop() << "%" << std::endl;
+    while (!(analyzer_buffer->empty())) {
+        std::cout << *analyzer_buffer->pop() << std::endl;
     }
 
     reader.stop();
-    analyzer.stop();
+    //analyzer.stop();
 
     /// Printing the analyzer buffer
     /*while (!(analyzer_buffer->empty())) {
