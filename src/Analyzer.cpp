@@ -1,59 +1,68 @@
 #include "../include/Analyzer.hpp"
 
 struct CPUData {
-    std::string cpu;
-
-    unsigned long long int user { };
-    unsigned long long int nice { };
-    unsigned long long int system { };
-    unsigned long long int idle { };
-    unsigned long long int iowait { };
-    unsigned long long int irq { };
-    unsigned long long int softirq { };
-    unsigned long long int steal { };
-    unsigned long long int guest { };
-    unsigned long long int guest_nice { };
-
-    [[nodiscard]] unsigned long long int get_total() const {
-        return user + nice + system + idle + iowait + irq + softirq + steal;
-    }
+    unsigned long long int user;
+    unsigned long long int nice;
+    unsigned long long int system;
+    unsigned long long int idle;
+    unsigned long long int iowait;
+    unsigned long long int irq;
+    unsigned long long int softirq;
+    unsigned long long int steal;
+    unsigned long long int guest;
+    unsigned long long int guest_nice;
 };
 
 auto Analyzer::analyze_data() -> void {
+    const std::size_t cpus = *_cpu_count_receive->pop();
+    auto* cpus_current_data = new CPUData[cpus];
+    auto* cpus_previous_data = new CPUData[cpus];
+    std::string data;
+
+    for (std::size_t i = 0; i < cpus; i++) {
+        data = *_analyzer_receive->pop();
+        std::istringstream iss(data);
+        std::string cpu_name;
+        iss >> cpu_name >> cpus_previous_data[i].user >> cpus_previous_data[i].nice >> cpus_previous_data[i].system
+            >> cpus_previous_data[i].idle >> cpus_previous_data[i].iowait >> cpus_previous_data[i].irq
+            >> cpus_previous_data[i].softirq >> cpus_previous_data[i].steal >> cpus_previous_data[i].guest
+            >> cpus_previous_data[i].guest_nice;
+    }
+
     while (!_exit_flag) {
-        std::unique_ptr<std::string> raw_data;
-
-        {
-            std::lock_guard<std::mutex> lock(_analyzer_mutex);
-            raw_data = _analyzer_receive->pop();
+        bool data_received = false;
+        for (std::size_t i = 0; i < cpus; i++) {
+            data = *_analyzer_receive->pop();
+            data_received = true;
+            std::istringstream iss(data);
+            std::string cpu_name;
+            iss >> cpu_name >> cpus_current_data[i].user >> cpus_current_data[i].nice >> cpus_current_data[i].system
+                >> cpus_current_data[i].idle >> cpus_current_data[i].iowait >> cpus_current_data[i].irq
+                >> cpus_current_data[i].softirq >> cpus_current_data[i].steal >> cpus_current_data[i].guest
+                >> cpus_current_data[i].guest_nice;
         }
 
-        std::stringstream ss(*raw_data);
-
-        std::vector<CPUData> data;
-        std::string line;
-
-        while (std::getline(ss, line)) {
-            if (line.empty() || line.find("cpu") != 0) {
-                continue;
-            }
-
-            std::istringstream iss(line);
-            CPUData cpu_data;
-            iss >> cpu_data.cpu >> cpu_data.user >> cpu_data.nice >> cpu_data.system >> cpu_data.idle
-                >> cpu_data.iowait >> cpu_data.irq >> cpu_data.softirq >> cpu_data.steal
-                >> cpu_data.guest >> cpu_data.guest_nice;
-            data.push_back(cpu_data);
+        if (!data_received) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            continue;
         }
 
-        for (auto it = std::next(data.begin()); it != data.end(); ++it) {
-            double utilization = 100.0 *
-                                 (1.0 - (static_cast<double>(it->idle) / static_cast<double>(it->get_total())));
+        for (std::size_t i = 0; i < cpus; i++) {
+            unsigned long long int prev_idle = cpus_previous_data[i].idle + cpus_previous_data[i].iowait;
+            unsigned long long int idle = cpus_current_data[i].idle + cpus_current_data[i].iowait;
+            unsigned long long int prev_non_idle = cpus_previous_data[i].user + cpus_previous_data[i].nice
+                                                   + cpus_previous_data[i].system + cpus_previous_data[i].irq
+                                                   + cpus_previous_data[i].softirq + cpus_previous_data[i].steal;
+            unsigned long long int non_idle = cpus_current_data[i].user + cpus_current_data[i].nice
+                                              + cpus_current_data[i].system + cpus_current_data[i].irq
+                                              + cpus_current_data[i].softirq + cpus_current_data[i].steal;
+            unsigned long long int prev_total = prev_idle + prev_non_idle;
+            unsigned long long int total = idle + non_idle;
+            unsigned long long int total_d = total - prev_total;
+            unsigned long long int idle_d  = idle - prev_idle;
 
-            std::stringstream _ss;
-            _ss << std::fixed << std::setprecision(1) << utilization;
-            std::string utilization_str = _ss.str();
-            std::cout << it->cpu + " utilization: " + utilization_str + "%" << std::endl;
+            int cpu_usage = (total_d == 0) ? 0 : (int) (100 * (total_d - idle_d) / total_d);
+            std::cout << "cpu: " << "- " << cpu_usage << "%" << std::endl;
         }
     }
 }

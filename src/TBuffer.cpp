@@ -1,3 +1,4 @@
+#include <iostream>
 #include "../include/TBuffer.hpp"
 
 /**
@@ -9,7 +10,7 @@ auto TBuffer<T>::push(T value) -> void {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_full.wait(lock, [this]() { return _count != _buffer.size(); });
     _buffer[_tail] = std::make_unique<T>(std::forward<T>(value));
-    _tail = (_tail + 1) % _buffer.size();
+    this->_tail = (_tail + 1) % _buffer.size();
     ++_count;
     lock.unlock();
     _cond_empty.notify_one();
@@ -26,7 +27,7 @@ auto TBuffer<T>::pop() -> std::unique_ptr<T> {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_empty.wait(lock, [this]() { return _count != 0; });
     auto item = std::move(_buffer[_head]);
-    _head = (_head + 1) % _buffer.size();
+    this->_head = (_head + 1) % _buffer.size();
     --_count;
     lock.unlock();
     _cond_full.notify_one();
@@ -41,6 +42,21 @@ template<class T>
 auto TBuffer<T>::empty() -> bool {
     std::unique_lock<std::mutex> lock(_mutex);
     return _count == 0;
+}
+
+/**
+ * @brief Returns a copy of the item at the head of the buffer without modifying the buffer.
+ * This function returns a copy of the item at the head of the buffer. If the buffer is empty,
+ * the calling thread will block until an item is available.
+ * @return A copy of the item at the head of the buffer.
+ */
+template<class T>
+auto TBuffer<T>::peek() -> std::unique_ptr<T> {
+    std::unique_lock<std::mutex> lock(_mutex);
+    _cond_empty.wait(lock, [this]() { return _count != 0; });
+    auto item = std::make_unique<T>(*_buffer[_head]);
+    lock.unlock();
+    return item;
 }
 
 template class TBuffer<int>;

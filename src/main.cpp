@@ -20,16 +20,17 @@ auto main() -> int {
 
     /// Starting and stopping the thread
     reader.start();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    //std::this_thread::sleep_for(std::chrono::milliseconds (200));
     //analyzer.start();
-
-    /// Printing the printer buffer
-    while (!(analyzer_buffer->empty())) {
-        std::cout << *analyzer_buffer->pop() << std::endl;
+    while (true) {
+        std::unique_ptr<std::string> data = analyzer_buffer->pop();
+        if (*data == "Reader Finished") break;
+        std::cout << *data << std::endl;
     }
-
     reader.stop();
     //analyzer.stop();
+
+    /// Printing the printer buffer
 
     /// Printing the analyzer buffer
     /*while (!(analyzer_buffer->empty())) {

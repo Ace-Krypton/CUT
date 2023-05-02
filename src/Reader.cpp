@@ -60,20 +60,13 @@ auto Reader::read_data() -> void {
             }
         }
 
-        {
-            std::lock_guard<std::mutex> lock(_analyzer_mutex);
-            std::string raw_data = data_ss.str();
-            _analyzer_buffer->push(raw_data);
-        }
+        std::string raw_data = data_ss.str();
+        _analyzer_buffer->push(raw_data);
 
         file.close();
-        std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-
-    {
-        std::lock_guard<std::mutex> lock(_analyzer_mutex);
-        _analyzer_buffer->push("Reader Finished");
-    }
+    _analyzer_buffer->push("Reader Finished");
 }
 
 /**

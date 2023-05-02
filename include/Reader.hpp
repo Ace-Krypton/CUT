@@ -27,7 +27,6 @@ public:
 
 private:
     std::thread _thread;
-    std::mutex _analyzer_mutex;
     std::atomic<bool> _exit_flag { false };
     std::shared_ptr<TBuffer<std::string>> _logger_buffer;
     std::shared_ptr<TBuffer<std::string>> _analyzer_buffer;
