@@ -26,7 +26,9 @@ public:
     static auto get_num_cpus() -> size_t;
 
 private:
+    std::mutex _mutex;
     std::thread _thread;
+    std::condition_variable _cond_var;
     std::atomic<bool> _exit_flag { false };
     std::shared_ptr<TBuffer<std::string>> _logger_buffer;
     std::shared_ptr<TBuffer<std::string>> _analyzer_buffer;

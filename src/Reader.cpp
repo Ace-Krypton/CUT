@@ -33,7 +33,7 @@ auto Reader::get_num_cpus() -> size_t {
  * @brief Reads data from "/proc/stat" and pushes it onto the analyzer buffer.
  */
 auto Reader::read_data() -> void {
-    const size_t cpus = get_num_cpus();
+    const std::size_t cpus = get_num_cpus();
     _cpu_count_buffer->push(static_cast<int>(cpus));
 
     while (!_exit_flag) {
@@ -42,7 +42,8 @@ auto Reader::read_data() -> void {
 
         if (!file.is_open()) {
             std::cerr << "Error: Could not open /proc/stat" << std::endl;
-            std::this_thread::sleep_for(std::chrono::nanoseconds(200000));
+            std::unique_lock<std::mutex> lock(_mutex);
+            _cond_var.wait_for(lock, std::chrono::milliseconds(200));
             continue;
         }
 
@@ -64,7 +65,8 @@ auto Reader::read_data() -> void {
         _analyzer_buffer->push(raw_data);
 
         file.close();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::unique_lock<std::mutex> lock(_mutex);
+        _cond_var.wait_for(lock, std::chrono::seconds(1));
     }
     _analyzer_buffer->push("Reader Finished");
 }
@@ -80,9 +82,11 @@ auto Reader::start() -> void {
 /**
  * @brief Stops the Reader thread.
  */
-auto Reader::stop() -> void {
+void Reader::stop() {
     std::cout << "CAME TO HERE" << std::endl;
     _exit_flag.store(true);
+    std::unique_lock<std::mutex> lock(_mutex);
+    _cond_var.notify_one();
     if (_thread.joinable()) {
         _thread.join();
     }
