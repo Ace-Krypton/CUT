@@ -3,4 +3,4 @@ project(CUT)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(CUT src/main.cpp src/TBuffer.cpp src/Reader.cpp include/Reader.hpp src/Analyzer.cpp include/Analyzer.hpp)
+add_executable(CUT src/main.cpp src/TBuffer.cpp src/Reader.cpp include/Reader.hpp src/Analyzer.cpp include/Analyzer.hpp include/SPSCQueue.hpp)

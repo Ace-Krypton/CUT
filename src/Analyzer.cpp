@@ -14,13 +14,13 @@ struct CPUData {
 };
 
 auto Analyzer::analyze_data() -> void {
-    const std::size_t cpus = *_cpu_count_receive->pop();
+    const std::size_t cpus = *_cpu_count_receive->front();
     auto* cpus_current_data = new CPUData[cpus];
     auto* cpus_previous_data = new CPUData[cpus];
     std::string data;
 
-    for (std::size_t i = 0; i < cpus; i++) {
-        data = *_analyzer_receive->pop();
+    for (std::size_t i = 0; i < cpus; ++i) {
+        data = *_analyzer_receive->front();
         std::istringstream iss(data);
         std::string cpu_name;
         iss >> cpu_name >> cpus_previous_data[i].user >> cpus_previous_data[i].nice >> cpus_previous_data[i].system
@@ -31,8 +31,8 @@ auto Analyzer::analyze_data() -> void {
 
     while (!_exit_flag) {
         bool data_received = false;
-        for (std::size_t i = 0; i < cpus; i++) {
-            data = *_analyzer_receive->pop();
+        for (std::size_t i = 0; i < cpus; ++i) {
+            data = *_analyzer_receive->front();
             data_received = true;
             std::istringstream iss(data);
             std::string cpu_name;
@@ -47,7 +47,7 @@ auto Analyzer::analyze_data() -> void {
             continue;
         }
 
-        for (std::size_t i = 0; i < cpus; i++) {
+        for (std::size_t i = 0; i < cpus; ++i) {
             unsigned long long int prev_idle = cpus_previous_data[i].idle + cpus_previous_data[i].iowait;
             unsigned long long int idle = cpus_current_data[i].idle + cpus_current_data[i].iowait;
             unsigned long long int prev_non_idle = cpus_previous_data[i].user + cpus_previous_data[i].nice

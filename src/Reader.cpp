@@ -4,11 +4,11 @@
  * @brief Returns the number of available CPUs on the system.
  * @return The number of available CPUs as a size_t value.
  */
-auto Reader::get_num_cpus() -> size_t {
+auto Reader::get_num_cpus() -> std::size_t {
 #ifdef _SC_NPROCESSORS_ONLN
     long num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
     if (num_cpus > 0) {
-        return static_cast<size_t>(num_cpus);
+        return static_cast<std::size_t>(num_cpus);
     }
 #endif
 
@@ -20,7 +20,7 @@ auto Reader::get_num_cpus() -> size_t {
     }
 
     std::string line;
-    size_t cpu_count = 0;
+    std::size_t cpu_count = 0;
 
     while (std::getline(count_stream, line)) {
         if (line.find("cpu") == 0) cpu_count++;
@@ -43,7 +43,7 @@ auto Reader::read_data() -> void {
         if (!file.is_open()) {
             std::cerr << "Error: Could not open /proc/stat" << std::endl;
             std::unique_lock<std::mutex> lock(_mutex);
-            _cond_var.wait_for(lock, std::chrono::milliseconds(200));
+            _cond_var.wait_for(lock, std::chrono::milliseconds(400));
             continue;
         }
 
@@ -67,6 +67,7 @@ auto Reader::read_data() -> void {
         file.close();
         std::unique_lock<std::mutex> lock(_mutex);
         _cond_var.wait_for(lock, std::chrono::seconds(1));
+        _analyzer_buffer->push("Reader Finished");
     }
     _analyzer_buffer->push("Reader Finished");
 }
@@ -82,7 +83,7 @@ auto Reader::start() -> void {
 /**
  * @brief Stops the Reader thread.
  */
-void Reader::stop() {
+auto Reader::stop() -> void {
     std::cout << "CAME TO HERE" << std::endl;
     _exit_flag.store(true);
     std::unique_lock<std::mutex> lock(_mutex);
