@@ -1,3 +1,4 @@
+#include <vector>
 #include "../include/Analyzer.hpp"
 
 struct CPUData {

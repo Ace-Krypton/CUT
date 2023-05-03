@@ -1,5 +1,4 @@
-#ifndef CUT_TBUFFER_HPP
-#define CUT_TBUFFER_HPP
+#pragma once
 
 #include <mutex>
 #include <vector>
@@ -25,5 +24,3 @@ private:
     std::condition_variable _cond_empty;
     std::vector<std::unique_ptr<T>> _buffer;
 };
-
-#endif //CUT_TBUFFER_HPP

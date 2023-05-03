@@ -17,7 +17,7 @@
 #define RIGTORP_NODISCARD
 #endif
 
-namespace rigtorp {
+namespace lockfree {
     template <typename T, typename Allocator = std::allocator<T>> class SPSCQueue {
 #if defined(__cpp_if_constexpr) && defined(__cpp_lib_void_t)
         template <typename Alloc2, typename = void>
@@ -213,4 +213,4 @@ namespace rigtorp {
         // writeIdxCache_
         char padding_[kCacheLineSize - sizeof(writeIdxCache_)]{};
     };
-} // namespace rigtorp
+} // namespace lockfree

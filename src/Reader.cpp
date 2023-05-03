@@ -34,7 +34,7 @@ auto Reader::get_num_cpus() -> std::size_t {
  */
 auto Reader::read_data() -> void {
     const std::size_t cpus = get_num_cpus();
-    _cpu_count_buffer->push(static_cast<int>(cpus));
+    _cpu_count_buffer->push(cpus);
 
     while (!_exit_flag) {
         _logger_buffer->push("Reader is reading from /proc/stat");
@@ -67,7 +67,6 @@ auto Reader::read_data() -> void {
         file.close();
         std::unique_lock<std::mutex> lock(_mutex);
         _cond_var.wait_for(lock, std::chrono::seconds(1));
-        _analyzer_buffer->push("Reader Finished");
     }
     _analyzer_buffer->push("Reader Finished");
 }
