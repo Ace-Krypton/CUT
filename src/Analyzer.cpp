@@ -1,3 +1,4 @@
+#include <map>
 #include "../include/Analyzer.hpp"
 
 struct CPUData {
@@ -14,6 +15,8 @@ struct CPUData {
 };
 
 auto Analyzer::analyze() -> void {
+    std::map<std::string, std::vector<std::uint64_t>> prev_cpu_data;
+
     while (!_exit_flag) {
         if (_analyzer_receive->empty()) {
             std::unique_lock<std::mutex> lock(_mutex);
@@ -23,24 +26,48 @@ auto Analyzer::analyze() -> void {
 
         std::string *raw_data = _analyzer_receive->front();
         if (raw_data) {
-            std::cout << "Analyzer received data: " << *raw_data << std::endl;
+            std::cout << *raw_data << std::endl;
+            std::stringstream ss(*raw_data);
+            std::string line;
+            std::map<std::string, std::vector<std::uint64_t>> cpu_data;
+
+            while (std::getline(ss, line)) {
+                std::istringstream iss(line);
+                std::string cpu_name;
+                iss >> cpu_name;
+                if (cpu_name == "cpu") continue;
+                std::vector<std::uint64_t> times;
+                std::uint64_t time;
+                while (iss >> time) times.push_back(time);
+                cpu_data[cpu_name] = times;
+            }
+
+            if (!prev_cpu_data.empty()) {
+                for (const auto& [cpu_name, times] : cpu_data) {
+                    const auto& prev_times = prev_cpu_data[cpu_name];
+                    if (prev_times.size() != times.size()) continue;
+                    std::uint64_t total_time = 0;
+                    std::uint64_t idle_time = times[3];
+                    for (std::size_t i = 0; i < times.size(); ++i) total_time += times[i] - prev_times[i];
+                    std::uint64_t cpu_usage = 100 * (total_time - idle_time) / total_time;
+                    std::cout << "CPU " << cpu_name << " usage: " << cpu_usage << "%" << std::endl;
+                }
+            }
+
+            prev_cpu_data = cpu_data;
             _analyzer_receive->pop();
         }
 
         std::size_t *cpu_data = _cpu_count_receive->front();
         if (cpu_data) {
-            std::cout << "CPU COUNT: " << *cpu_data << std::endl;
             _cpu_count_receive->pop();
         }
 
         std::string *logger_data = _logger_buffer->front();
         if (logger_data) {
-            std::cout << "LOGGER MESSAGE: " << *logger_data << std::endl;
             _logger_buffer->pop();
         }
     }
-
-    std::cout << "Analyzer finished" << std::endl;
 }
 
 auto Analyzer::analyze_data() -> void {
