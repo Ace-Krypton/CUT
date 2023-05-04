@@ -34,12 +34,10 @@ namespace lockfree {
         explicit SPSCQueue(const size_t capacity,
                            const Allocator &allocator = Allocator())
                 : capacity_(capacity), allocator_(allocator) {
-            // The queue needs at least one element
             if (capacity_ < 1) {
                 capacity_ = 1;
             }
-            capacity_++; // Needs one slack element
-            // Prevent overflowing size_t
+            capacity_++;
             if (capacity_ > SIZE_MAX - 2 * kPadding) {
                 capacity_ = SIZE_MAX - 2 * kPadding;
             }
@@ -73,7 +71,6 @@ namespace lockfree {
                                                          capacity_ + 2 * kPadding);
         }
 
-        // non-copyable and non-movable
         SPSCQueue(const SPSCQueue &) = delete;
         SPSCQueue &operator=(const SPSCQueue &) = delete;
 
@@ -127,7 +124,7 @@ namespace lockfree {
             emplace(std::forward<P>(v));
         }
 
-        RIGTORP_NODISCARD bool
+        RIGTORP_NODISCARD [[maybe_unused]] bool
         try_push(const T &v) noexcept(std::is_nothrow_copy_constructible<T>::value) {
             static_assert(std::is_copy_constructible<T>::value,
                           "T must be copy constructive");
@@ -136,7 +133,7 @@ namespace lockfree {
 
         template <typename P, typename = typename std::enable_if<
                 std::is_constructible<T, P &&>::value>::type>
-        RIGTORP_NODISCARD bool
+        [[maybe_unused]] RIGTORP_NODISCARD bool
         try_push(P &&v) noexcept(std::is_nothrow_constructible<T, P &&>::value) {
             return try_emplace(std::forward<P>(v));
         }
@@ -165,7 +162,7 @@ namespace lockfree {
             readIdx_.store(nextReadIdx, std::memory_order_release);
         }
 
-        RIGTORP_NODISCARD size_t size() const noexcept {
+        RIGTORP_NODISCARD [[maybe_unused]] size_t size() const noexcept {
             std::ptrdiff_t diff = writeIdx_.load(std::memory_order_acquire) -
                                   readIdx_.load(std::memory_order_acquire);
             if (diff < 0) {
@@ -174,12 +171,12 @@ namespace lockfree {
             return static_cast<size_t>(diff);
         }
 
-        RIGTORP_NODISCARD bool empty() const noexcept {
+        RIGTORP_NODISCARD [[maybe_unused]] bool empty() const noexcept {
             return writeIdx_.load(std::memory_order_acquire) ==
                    readIdx_.load(std::memory_order_acquire);
         }
 
-        RIGTORP_NODISCARD size_t capacity() const noexcept { return capacity_ - 1; }
+        RIGTORP_NODISCARD [[maybe_unused]] size_t capacity() const noexcept { return capacity_ - 1; }
 
     private:
 #ifdef __cpp_lib_hardware_interference_size
@@ -189,7 +186,6 @@ namespace lockfree {
         static constexpr size_t kCacheLineSize = 64;
 #endif
 
-        // Padding to avoid false sharing between slots_ and adjacent allocations
         static constexpr size_t kPadding = (kCacheLineSize - 1) / sizeof(T) + 1;
 
     private:
@@ -201,16 +197,11 @@ namespace lockfree {
         Allocator allocator_;
 #endif
 
-        // Align to cache line size in order to avoid false sharing
-        // readIdxCache_ and writeIdxCache_ is used to reduce the amount of cache
-        // coherency traffic
         alignas(kCacheLineSize) std::atomic<size_t> writeIdx_ = {0};
         alignas(kCacheLineSize) size_t readIdxCache_ = 0;
         alignas(kCacheLineSize) std::atomic<size_t> readIdx_ = {0};
         alignas(kCacheLineSize) size_t writeIdxCache_ = 0;
 
-        // Padding to avoid adjacent allocations to share cache line with
-        // writeIdxCache_
-        char padding_[kCacheLineSize - sizeof(writeIdxCache_)]{};
+        [[maybe_unused]] char padding_[kCacheLineSize - sizeof(writeIdxCache_)]{};
     };
 } // namespace lockfree

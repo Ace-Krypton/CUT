@@ -1,10 +1,13 @@
 #pragma once
 
 #include <array>
+#include <mutex>
 #include <thread>
+#include <vector>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <condition_variable>
 
 #include "SPSCQueue.hpp"
 
@@ -21,10 +24,13 @@ public:
 
     auto stop() -> void;
     auto start() -> void;
+    auto analyze() -> void;
     auto analyze_data() -> void;
 
 private:
+    std::mutex _mutex;
     std::thread _thread;
+    std::condition_variable _cond_var;
     std::atomic<bool> _exit_flag { false };
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _logger_buffer;
     std::shared_ptr<lockfree::SPSCQueue<int>> _printer_buffer;

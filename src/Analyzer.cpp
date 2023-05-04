@@ -1,4 +1,3 @@
-#include <vector>
 #include "../include/Analyzer.hpp"
 
 struct CPUData {
@@ -14,14 +13,46 @@ struct CPUData {
     unsigned long long int guest_nice;
 };
 
+auto Analyzer::analyze() -> void {
+    while (!_exit_flag) {
+        if (_analyzer_receive->empty()) {
+            std::unique_lock<std::mutex> lock(_mutex);
+            _cond_var.wait_for(lock, std::chrono::milliseconds(100));
+            continue;
+        }
+
+        std::string *raw_data = _analyzer_receive->front();
+        if (raw_data) {
+            std::cout << "Analyzer received data: " << *raw_data << std::endl;
+            _analyzer_receive->pop();
+        }
+
+        std::size_t *cpu_data = _cpu_count_receive->front();
+        if (cpu_data) {
+            std::cout << "CPU COUNT: " << *cpu_data << std::endl;
+            _cpu_count_receive->pop();
+        }
+
+        std::string *logger_data = _logger_buffer->front();
+        if (logger_data) {
+            std::cout << "LOGGER MESSAGE: " << *logger_data << std::endl;
+            _logger_buffer->pop();
+        }
+    }
+
+    std::cout << "Analyzer finished" << std::endl;
+}
+
 auto Analyzer::analyze_data() -> void {
     const std::size_t cpus = *_cpu_count_receive->front();
+    _cpu_count_receive->pop();
     auto* cpus_current_data = new CPUData[cpus];
     auto* cpus_previous_data = new CPUData[cpus];
     std::string data;
 
     for (std::size_t i = 0; i < cpus; ++i) {
         data = *_analyzer_receive->front();
+        _analyzer_receive->pop();
         std::istringstream iss(data);
         std::string cpu_name;
         iss >> cpu_name >> cpus_previous_data[i].user >> cpus_previous_data[i].nice >> cpus_previous_data[i].system
@@ -34,6 +65,7 @@ auto Analyzer::analyze_data() -> void {
         bool data_received = false;
         for (std::size_t i = 0; i < cpus; ++i) {
             data = *_analyzer_receive->front();
+            _analyzer_receive->pop();
             data_received = true;
             std::istringstream iss(data);
             std::string cpu_name;
@@ -69,11 +101,13 @@ auto Analyzer::analyze_data() -> void {
 }
 
 auto Analyzer::start() -> void {
-    _thread = std::thread(&Analyzer::analyze_data, this);
+    _thread = std::thread(&Analyzer::analyze, this);
 }
 
 auto Analyzer::stop() -> void {
     _exit_flag.store(true);
+    std::unique_lock<std::mutex> lock(_mutex);
+    _cond_var.notify_one();
     if (_thread.joinable()) {
         _thread.join();
     }

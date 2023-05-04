@@ -34,9 +34,9 @@ auto Reader::get_num_cpus() -> std::size_t {
  */
 auto Reader::read_data() -> void {
     const std::size_t cpus = get_num_cpus();
-    _cpu_count_buffer->push(cpus);
 
     while (!_exit_flag) {
+        _cpu_count_buffer->push(cpus);
         _logger_buffer->push("Reader is reading from /proc/stat");
         std::ifstream file("/proc/stat");
 
@@ -68,14 +68,12 @@ auto Reader::read_data() -> void {
         std::unique_lock<std::mutex> lock(_mutex);
         _cond_var.wait_for(lock, std::chrono::seconds(1));
     }
-    _analyzer_buffer->push("Reader Finished");
 }
 
 /**
  * @brief Starts the Reader thread.
  */
 auto Reader::start() -> void {
-    std::cout << "STARTING" << std::endl;
     _thread = std::thread(&Reader::read_data, this);
 }
 
@@ -83,7 +81,6 @@ auto Reader::start() -> void {
  * @brief Stops the Reader thread.
  */
 auto Reader::stop() -> void {
-    std::cout << "CAME TO HERE" << std::endl;
     _exit_flag.store(true);
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_var.notify_one();
