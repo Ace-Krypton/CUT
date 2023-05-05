@@ -25,7 +25,8 @@ public:
     auto stop() -> void;
     auto start() -> void;
     auto analyze() -> void;
-    auto analyze_data() -> void;
+
+    [[maybe_unused]] auto analyze_data() -> void;
 
 private:
     std::mutex _mutex;

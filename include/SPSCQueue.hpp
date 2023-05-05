@@ -56,8 +56,8 @@ namespace lockfree {
         allocator_, capacity_ + 2 * kPadding);
 #endif
 
-            static_assert(alignof(SPSCQueue<T>) == kCacheLineSize, "");
-            static_assert(sizeof(SPSCQueue<T>) >= 3 * kCacheLineSize, "");
+            static_assert(alignof(SPSCQueue<T>) == kCacheLineSize);
+            static_assert(sizeof(SPSCQueue<T>) >= 3 * kCacheLineSize);
             assert(reinterpret_cast<char *>(&readIdx_) -
                    reinterpret_cast<char *>(&writeIdx_) >=
                    static_cast<std::ptrdiff_t>(kCacheLineSize));
