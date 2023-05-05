@@ -19,13 +19,17 @@ auto main() -> int {
     Reader reader(logger_buffer, analyzer_buffer, cpu_count_buffer);
 
     /// Creating the analyzer thread
-    Analyzer analyzer(logger_buffer, analyzer_buffer,
-                      printer_buffer, cpu_count_buffer);
+    Analyzer analyzer(printer_buffer, logger_buffer,
+                      analyzer_buffer, cpu_count_buffer);
 
     /// Starting the threads
     reader.start();
     analyzer.start();
-    std::this_thread::sleep_for(std::chrono::seconds(50));
+
+    /// I will fix this
+    std::this_thread::sleep_for(std::chrono::seconds(1000));
+
+    /// Stopping the threads
     reader.stop();
     analyzer.stop();
 

@@ -28,8 +28,8 @@ public:
 public:
     std::mutex _mutex;
     std::thread _thread;
+    std::atomic<bool> _exit_flag;
     std::condition_variable _cond_var;
-    std::atomic<bool> _exit_flag { false };
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _logger_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _analyzer_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::size_t>> _cpu_count_buffer;

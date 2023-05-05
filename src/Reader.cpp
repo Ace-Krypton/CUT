@@ -1,20 +1,28 @@
 #include "../include/Reader.hpp"
 
 /**
- * @brief Returns the number of available CPUs on the system.
- * @return The number of available CPUs as a size_t value.
+ * @brief Returns the number of CPUs on the current system.
+ *
+ * If the '_SC_NPROCESSORS_ONLN' symbol is defined, the function calls sysconf()
+ * to get the number of CPUs online. Otherwise, it reads the /proc/stat file to
+ * count the number of "cpu" lines.
+ *
+ * @return The number of CPUs on the current system.
  */
 auto Reader::get_num_cpus() -> std::size_t {
 #ifdef _SC_NPROCESSORS_ONLN
+    /// Use sysconf() to get the number of CPUs online.
     long num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
     if (num_cpus > 0) {
         return static_cast<std::size_t>(num_cpus);
     }
 #endif
 
+    /// If sysconf() failed or is not available, read /proc/stat.
     std::ifstream count_stream("/proc/stat");
 
     if (!count_stream.is_open()) {
+        /// Display an error message if the file could not be opened.
         std::cerr << "Error: Could not open /proc/stat" << std::endl;
         return 0;
     }
@@ -23,23 +31,32 @@ auto Reader::get_num_cpus() -> std::size_t {
     std::size_t cpu_count = 0;
 
     while (std::getline(count_stream, line)) {
+        /// Count the number of "cpu" lines in the file.
         if (line.find("cpu") == 0) cpu_count++;
     }
 
+    /// Subtract 1 from the count to exclude the "cpu" line that corresponds to all CPUs.
     return cpu_count - 1;
 }
 
 /**
- * @brief Reads data from "/proc/stat" and pushes it onto the analyzer buffer.
+ * @brief Reads data from /proc/stat and pushes it into a buffer for analysis.
  */
 auto Reader::read_data() -> void {
     const std::size_t cpus = get_num_cpus();
 
+    /// Continuously read data until the exit flag is set.
     while (!_exit_flag) {
+        /// Push information about the number of CPUs being used.
         _cpu_count_buffer->push(cpus);
+
+        /// Push a log message to the logger buffer indicating that data is being read.
         _logger_buffer->push("Reader is reading from /proc/stat");
+
+        /// Open the /proc/stat file for reading.
         std::ifstream file("/proc/stat");
 
+        /// If the file cannot be opened, print an error message and wait before continuing.
         if (!file.is_open()) {
             std::cerr << "Error: Could not open /proc/stat" << std::endl;
             std::unique_lock<std::mutex> lock(_mutex);
@@ -47,11 +64,14 @@ auto Reader::read_data() -> void {
             continue;
         }
 
+        /// Read the contents of the file into a stringstream.
         std::stringstream ss;
         ss << file.rdbuf();
 
         std::string line;
         std::stringstream data_ss;
+
+        /// Extract data for each CPU from the file and append it to a stringstream.
         while (std::getline(ss, line)) {
             if (line.find("cpu0") == 0 ||
                 line.find("cpu1") == 0 ||
@@ -61,9 +81,11 @@ auto Reader::read_data() -> void {
             }
         }
 
+        /// Convert the stringstream to a string and push it onto the analyzer buffer for processing.
         std::string raw_data = data_ss.str();
         _analyzer_buffer->push(raw_data);
 
+        /// Close the file and wait for a fixed amount of time before reading again.
         file.close();
         std::unique_lock<std::mutex> lock(_mutex);
         _cond_var.wait_for(lock, std::chrono::seconds(1));
@@ -71,14 +93,19 @@ auto Reader::read_data() -> void {
 }
 
 /**
- * @brief Starts the Reader thread.
+ * @brief Starts the reader thread.
+ *
+ * This method creates a new thread and starts the `read_data` method.
  */
 auto Reader::start() -> void {
     _thread = std::thread(&Reader::read_data, this);
 }
 
 /**
- * @brief Stops the Reader thread.
+ * @brief Stops the reader thread.
+ *
+ * This method sets the `_exit_flag` variable to `true`, notifies the condition variable
+ * to wake up the thread, and waits for the thread to join before returning.
  */
 auto Reader::stop() -> void {
     _exit_flag.store(true);
