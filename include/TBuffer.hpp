@@ -10,10 +10,10 @@ class TBuffer {
 public:
     explicit TBuffer(std::size_t size) : _buffer(size), _count(0), _head(0), _tail(0) { };
 
-    auto empty() -> bool;
-    auto push(T value) -> void;
-    auto pop() -> std::unique_ptr<T>;
-    auto peek() -> std::unique_ptr<T>;
+    [[maybe_unused]] auto empty() -> bool;
+    [[maybe_unused]] auto push(T value) -> void;
+    [[maybe_unused]] auto pop() -> std::unique_ptr<T>;
+    [[maybe_unused]] auto peek() -> std::unique_ptr<T>;
 
 private:
     std::mutex _mutex;

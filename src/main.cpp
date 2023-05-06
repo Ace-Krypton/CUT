@@ -2,6 +2,7 @@
 #include <string>
 
 #include "../include/Reader.hpp"
+#include "../include/Printer.hpp"
 #include "../include/Analyzer.hpp"
 
 auto main() -> int {
@@ -22,9 +23,13 @@ auto main() -> int {
     Analyzer analyzer(printer_buffer, logger_buffer,
                       analyzer_buffer, cpu_count_buffer);
 
+    /// Creating the printer thread
+    Printer printer(printer_buffer, logger_buffer);
+
     /// Starting the threads
     reader.start();
     analyzer.start();
+    printer.start();
 
     /// I will fix this
     std::this_thread::sleep_for(std::chrono::seconds(1000));
@@ -32,6 +37,7 @@ auto main() -> int {
     /// Stopping the threads
     reader.stop();
     analyzer.stop();
+    printer.stop();
 
     return 0;
 }

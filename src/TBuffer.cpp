@@ -5,7 +5,7 @@
  * @param value The value to be inserted.
  */
 template<class T>
-auto TBuffer<T>::push(T value) -> void {
+[[maybe_unused]] auto TBuffer<T>::push(T value) -> void {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_full.wait(lock, [this]() { return _count != _buffer.size(); });
     _buffer[_tail] = std::make_unique<T>(std::forward<T>(value));
@@ -22,7 +22,7 @@ auto TBuffer<T>::push(T value) -> void {
  * @return A unique pointer to the item that was removed from the buffer.
  */
 template<class T>
-auto TBuffer<T>::pop() -> std::unique_ptr<T> {
+[[maybe_unused]] auto TBuffer<T>::pop() -> std::unique_ptr<T> {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_empty.wait(lock, [this]() { return _count != 0; });
     auto item = std::move(_buffer[_head]);
@@ -38,7 +38,7 @@ auto TBuffer<T>::pop() -> std::unique_ptr<T> {
  * @return True if the buffer is empty, false otherwise.
  */
 template<class T>
-auto TBuffer<T>::empty() -> bool {
+[[maybe_unused]] auto TBuffer<T>::empty() -> bool {
     std::unique_lock<std::mutex> lock(_mutex);
     return _count == 0;
 }
@@ -50,7 +50,7 @@ auto TBuffer<T>::empty() -> bool {
  * @return A copy of the item at the head of the buffer.
  */
 template<class T>
-auto TBuffer<T>::peek() -> std::unique_ptr<T> {
+[[maybe_unused]] auto TBuffer<T>::peek() -> std::unique_ptr<T> {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond_empty.wait(lock, [this]() { return _count != 0; });
     auto item = std::make_unique<T>(*_buffer[_head]);
