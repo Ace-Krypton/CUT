@@ -2,7 +2,7 @@
 
 auto Logger::logger_thread() -> void {
     /// Opens the file in appended mode
-    std::ofstream log_file(_file_name, std::ios::out);
+    std::ofstream log_file(_file_name, std::ios::app);
 
     /// Continuously analyze data until an exit flag is set
     while(!_exit_flag) {
