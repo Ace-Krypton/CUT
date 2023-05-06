@@ -69,15 +69,15 @@ auto Reader::read_data() -> void {
         ss << file.rdbuf();
 
         std::string line;
+        std::size_t count = 0;
         std::stringstream data_ss;
 
         /// Extract data for each CPU from the file and append it to a stringstream.
         while (std::getline(ss, line)) {
-            if (line.find("cpu0") == 0 ||
-                line.find("cpu1") == 0 ||
-                line.find("cpu2") == 0 ||
-                line.find("cpu3") == 0) {
+            /// Counts till the number of cores found in CPU
+            if (line.find("cpu" + std::to_string(count)) == 0 && count <= get_num_cpus()) {
                 data_ss << line << std::endl;
+                count++;
             }
         }
 
