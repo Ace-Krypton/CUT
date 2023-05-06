@@ -43,13 +43,8 @@ auto Reader::get_num_cpus() -> std::size_t {
  * @brief Reads data from /proc/stat and pushes it into a buffer for analysis.
  */
 auto Reader::read_data() -> void {
-    const std::size_t cpus = get_num_cpus();
-
     /// Continuously read data until the exit flag is set.
     while (!_exit_flag) {
-        /// Push information about the number of CPUs being used.
-        _cpu_count_buffer->push(cpus);
-
         /// Push a log message to the logger buffer indicating that data is being read.
         _logger_buffer->push("Reader is reading from /proc/stat");
 

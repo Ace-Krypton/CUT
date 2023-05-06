@@ -63,12 +63,6 @@ auto Analyzer::analyze_data() -> void {
             _analyzer_receive->pop();
         }
 
-        /// Feeding the Buffer
-        std::size_t *cpu_data = _cpu_count_receive->front();
-        if (cpu_data) {
-            _cpu_count_receive->pop();
-        }
-
         std::string *logger_data = _logger_buffer->front();
         if (logger_data) {
             _logger_buffer->pop();

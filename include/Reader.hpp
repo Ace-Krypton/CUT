@@ -13,11 +13,9 @@
 class Reader {
 public:
     Reader(const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
-           const std::shared_ptr<lockfree::SPSCQueue<std::string>>& analyzer_buffer,
-           const std::shared_ptr<lockfree::SPSCQueue<std::size_t>>& cpu_count_buffer)
+           const std::shared_ptr<lockfree::SPSCQueue<std::string>>& analyzer_buffer)
             : _logger_buffer(logger_buffer),
               _analyzer_buffer(analyzer_buffer),
-              _cpu_count_buffer(cpu_count_buffer),
               _exit_flag(false) { }
 
     auto stop() -> void;
@@ -32,5 +30,4 @@ public:
     std::condition_variable _cond_var;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _logger_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _analyzer_buffer;
-    std::shared_ptr<lockfree::SPSCQueue<std::size_t>> _cpu_count_buffer;
 };
