@@ -6,6 +6,9 @@
 auto Printer::print_data() -> void {
     /// Continuously analyze data until an exit flag is set
     while(!_exit_flag) {
+        /// Push a log message to the logger buffer indicating that data is being printed.
+        _logger_buffer->push("Data is being printed");
+
         /// Wait for data if data stream is empty
         if (_printer_buffer->empty()) {
             std::unique_lock<std::mutex> lock(_mutex);

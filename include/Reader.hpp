@@ -21,7 +21,7 @@ public:
     auto stop() -> void;
     auto start() -> void;
     auto read_data() -> void;
-    static auto get_num_cpus() -> std::size_t;
+    auto get_num_cpus() -> std::size_t;
 
 public:
     std::mutex _mutex;

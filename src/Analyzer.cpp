@@ -12,6 +12,9 @@ auto Analyzer::analyze_data() -> void {
 
     /// Continuously analyze data until an exit flag is set
     while (!_exit_flag) {
+        /// Inform the logger about the state of the program
+        _logger_buffer->push("Data is being analyzed");
+
         /// Wait for data if data stream is empty
         if (_analyzer_receive->empty()) {
             std::unique_lock<std::mutex> lock(_mutex);
@@ -61,11 +64,6 @@ auto Analyzer::analyze_data() -> void {
             prev_cpu_data = cpu_data;
             /// Update the Buffer by removing last element
             _analyzer_receive->pop();
-        }
-
-        std::string *logger_data = _logger_buffer->front();
-        if (logger_data) {
-            _logger_buffer->pop();
         }
     }
 }

@@ -22,8 +22,8 @@ auto Reader::get_num_cpus() -> std::size_t {
     std::ifstream count_stream("/proc/stat");
 
     if (!count_stream.is_open()) {
-        /// Display an error message if the file could not be opened.
-        std::cerr << "Error: Could not open /proc/stat" << std::endl;
+        /// Inform the logger, if the file could not be opened.
+        _logger_buffer->push("Error: Could not open /proc/stat");
         return 0;
     }
 
@@ -53,7 +53,7 @@ auto Reader::read_data() -> void {
 
         /// If the file cannot be opened, print an error message and wait before continuing.
         if (!file.is_open()) {
-            std::cerr << "Error: Could not open /proc/stat" << std::endl;
+            _logger_buffer->push("Error: Could not open /proc/stat");
             std::unique_lock<std::mutex> lock(_mutex);
             _cond_var.wait_for(lock, std::chrono::milliseconds(400));
             continue;

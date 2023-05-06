@@ -2,6 +2,7 @@
 #include <string>
 
 #include "../include/Reader.hpp"
+#include "../include/Logger.hpp"
 #include "../include/Printer.hpp"
 #include "../include/Analyzer.hpp"
 
@@ -24,10 +25,14 @@ auto main() -> int {
     /// Creating the printer thread
     Printer printer(logger_buffer, printer_buffer);
 
+    /// Creating the logger thread
+    Logger logger(logger_buffer, "/home/draco/logs.txt");
+
     /// Starting the threads
     reader.start();
     analyzer.start();
     printer.start();
+    logger.start();
 
     /// I will fix this
     std::this_thread::sleep_for(std::chrono::seconds(1000));
@@ -36,6 +41,7 @@ auto main() -> int {
     reader.stop();
     analyzer.stop();
     printer.stop();
+    logger.stop();
 
     return 0;
 }
