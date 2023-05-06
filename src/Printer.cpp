@@ -30,7 +30,52 @@ auto Printer::print_data() -> void {
 }
 
 /**
+ * @brief Prints the "|" according to percentage argument.
+ * @param percent Percentage value came from Printer thread.
+ * @return final std::string as "|".
+ */
+[[maybe_unused]] auto Printer::progress_bar(const std::string &percent) -> std::string {
+    std::string result = "CPU [";
+    int _size = 50;
+
+    int boundaries = static_cast<int>(
+            (std::stof(percent) / 100) * static_cast<float>(_size));
+
+    for (std::size_t i = 0; i < _size; ++i){
+        if (i <= boundaries) result += "|";
+        else result += " ";
+    }
+
+    result += percent.substr(0, 4) + "%]";
+    return result;
+}
+
+/**
+ * @brief Endless while loop for updating value and printing it to the screen.
+ * Exits when user presses "CTRL+C" or whatever the binding is.
+ */
+[[maybe_unused]] auto Printer::draw() -> void {
+    start_color();
+    int xMax;
+    [[maybe_unused]] int yMax;
+    getmaxyx(stdscr, yMax, xMax);
+    WINDOW * sys_win = newwin(17, xMax - 1, 0, 0);
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
+
+    while(!_exit_flag) {
+        //print_data(sys_win);
+        wrefresh(sys_win);
+        refresh();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
+/**
  * @brief Starts the Printer thread.
+ *
+ * This method creates a new thread and starts the `print_data` method.
  */
 auto Printer::start() -> void {
     _thread = std::thread(&Printer::print_data, this);
@@ -38,6 +83,9 @@ auto Printer::start() -> void {
 
 /**
  * @brief Stops the Printer thread.
+ *
+ * This method sets the `_exit_flag` variable to `true`, notifies the condition variable
+ * to wake up the thread, and waits for the thread to join before returning.
  */
 auto Printer::stop() -> void {
     _exit_flag.store(true);

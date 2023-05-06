@@ -3,6 +3,7 @@
 #include <thread>
 #include <string>
 #include <iostream>
+#include <ncurses.h>
 #include <condition_variable>
 
 #include "SPSCQueue.hpp"
@@ -18,6 +19,9 @@ public:
     auto stop() -> void;
     auto start() -> void;
     auto print_data() -> void;
+
+    [[maybe_unused]] auto draw() -> void;
+    [[maybe_unused]] static auto progress_bar(const std::string &percent) -> std::string;
 
 private:
     std::mutex _mutex;

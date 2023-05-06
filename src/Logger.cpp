@@ -1,5 +1,8 @@
 #include "../include/Logger.hpp"
 
+/**
+ * @brief Logger receives messages from all threads and writes them into a file.
+ */
 auto Logger::logger_thread() -> void {
     /// Opens the file in appended mode
     std::ofstream log_file(_file_name, std::ios::app);
@@ -27,6 +30,8 @@ auto Logger::logger_thread() -> void {
 
 /**
  * @brief Starts the Printer thread.
+ *
+ * This method creates a new thread and starts the `logger_thread` method.
  */
 auto Logger::start() -> void {
     _thread = std::thread(&Logger::logger_thread, this);
@@ -34,6 +39,9 @@ auto Logger::start() -> void {
 
 /**
  * @brief Stops the Printer thread.
+ *
+ * This method sets the `_exit_flag` variable to `true`, notifies the condition variable
+ * to wake up the thread, and waits for the thread to join before returning.
  */
 auto Logger::stop() -> void {
     _exit_flag.store(true);
