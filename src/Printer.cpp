@@ -8,10 +8,10 @@ auto Printer::print_data() -> void {
             continue;
         }
 
-        int *cpu_percentage = _printer_buffer->front();
+        std::string *cpu_percentage = _printer_buffer->front();
 
-        if (cpu_percentage != nullptr) {
-            std::cout << *cpu_percentage << "%" << std::endl;
+        if (!cpu_percentage->empty()) {
+            std::cout << *cpu_percentage << std::endl;
             _printer_buffer->pop();
         }
     }

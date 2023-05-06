@@ -9,7 +9,7 @@
 
 class Printer {
 public:
-    Printer(const std::shared_ptr<lockfree::SPSCQueue<int>>& printer_buffer,
+    Printer(const std::shared_ptr<lockfree::SPSCQueue<std::string>>& printer_buffer,
             const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer)
             : _logger_buffer(logger_buffer),
               _printer_buffer(printer_buffer),
@@ -24,6 +24,6 @@ private:
     std::thread _thread;
     std::atomic<bool> _exit_flag;
     std::condition_variable _cond_var;
-    std::shared_ptr<lockfree::SPSCQueue<int>> _printer_buffer;
+    std::shared_ptr<lockfree::SPSCQueue<std::string>> _printer_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _logger_buffer;
 };

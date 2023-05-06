@@ -13,8 +13,8 @@ auto main() -> int {
             std::make_unique<lockfree::SPSCQueue<std::string>>(30);
     std::shared_ptr<lockfree::SPSCQueue<std::size_t>> cpu_count_buffer =
             std::make_unique<lockfree::SPSCQueue<std::size_t>>(1);
-    std::shared_ptr<lockfree::SPSCQueue<int>> printer_buffer =
-            std::make_unique<lockfree::SPSCQueue<int>>(30);
+    std::shared_ptr<lockfree::SPSCQueue<std::string>> printer_buffer =
+            std::make_unique<lockfree::SPSCQueue<std::string>>(30);
 
     /// Creating reader thread
     Reader reader(logger_buffer, analyzer_buffer, cpu_count_buffer);

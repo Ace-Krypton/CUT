@@ -52,8 +52,7 @@ auto Analyzer::analyze_data() -> void {
                     } if (total_time > 0) {
                         double cpu_usage_floating = 100.0 * (total_time - idle_time) / total_time;
                         int cpu_usage_int = static_cast<int>(cpu_usage_floating);
-                        _printer_buffer->push(cpu_usage_int);
-                        //std::cout << cpu_name << " usage: " << cpu_usage_int << "%" << std::endl;
+                        _printer_buffer->push(cpu_name + " usage: " + std::to_string(cpu_usage_int) + "%");
                     }
                 }
             }
