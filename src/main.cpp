@@ -20,11 +20,11 @@ auto main() -> int {
     Reader reader(logger_buffer, analyzer_buffer, cpu_count_buffer);
 
     /// Creating the analyzer thread
-    Analyzer analyzer(printer_buffer, logger_buffer,
+    Analyzer analyzer(logger_buffer, printer_buffer,
                       analyzer_buffer, cpu_count_buffer);
 
     /// Creating the printer thread
-    Printer printer(printer_buffer, logger_buffer);
+    Printer printer(logger_buffer, printer_buffer);
 
     /// Starting the threads
     reader.start();

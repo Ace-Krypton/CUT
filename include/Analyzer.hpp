@@ -14,12 +14,12 @@
 
 class Analyzer {
 public:
-    Analyzer(const std::shared_ptr<lockfree::SPSCQueue<std::string>>& printer_buffer,
-             const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
+    Analyzer(const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
+             const std::shared_ptr<lockfree::SPSCQueue<std::string>>& printer_buffer,
              const std::shared_ptr<lockfree::SPSCQueue<std::string>>& analyzer_receive,
              const std::shared_ptr<lockfree::SPSCQueue<std::size_t>>& cpu_count_receive)
-            : _printer_buffer(printer_buffer),
-              _logger_buffer(logger_buffer),
+            : _logger_buffer(logger_buffer),
+              _printer_buffer(printer_buffer),
               _analyzer_receive(analyzer_receive),
               _cpu_count_receive(cpu_count_receive),
               _exit_flag(false) { }
@@ -33,8 +33,8 @@ private:
     std::thread _thread;
     std::atomic<bool> _exit_flag;
     std::condition_variable _cond_var;
-    std::shared_ptr<lockfree::SPSCQueue<std::string>> _printer_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _logger_buffer;
+    std::shared_ptr<lockfree::SPSCQueue<std::string>> _printer_buffer;
     std::shared_ptr<lockfree::SPSCQueue<std::string>> _analyzer_receive;
     std::shared_ptr<lockfree::SPSCQueue<std::size_t>> _cpu_count_receive;
 };
