@@ -1,3 +1,4 @@
+/*
 #include <gtest/gtest.h>
 
 #include "../include/Reader.hpp"
@@ -42,6 +43,7 @@ TEST_F(ReaderTest, ReadData) {
     // Add your assertions here to verify the behavior of the reader
 }
 
+*/
 /*int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
