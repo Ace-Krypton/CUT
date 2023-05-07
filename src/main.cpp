@@ -24,11 +24,11 @@ auto signal_handler(int signal) -> void {
 auto main() -> int {
     /// Creating Buffers
     std::shared_ptr<lockfree::SPSCQueue<std::string>> logger_buffer =
-            std::make_unique<lockfree::SPSCQueue<std::string>>(20);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(20);
     std::shared_ptr<lockfree::SPSCQueue<std::string>> analyzer_buffer =
-            std::make_unique<lockfree::SPSCQueue<std::string>>(30);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(30);
     std::shared_ptr<lockfree::SPSCQueue<std::string>> printer_buffer =
-            std::make_unique<lockfree::SPSCQueue<std::string>>(30);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(30);
 
     /// Creating reader thread
     Reader reader(logger_buffer, analyzer_buffer);
