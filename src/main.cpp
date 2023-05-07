@@ -1,10 +1,25 @@
 #include <thread>
 #include <string>
+#include <csignal>
 
 #include "../include/Reader.hpp"
 #include "../include/Logger.hpp"
 #include "../include/Printer.hpp"
 #include "../include/Analyzer.hpp"
+
+///NOT A GOOD WAY OF DOING IT, I WILL FIX IT
+/// Termination flag
+std::atomic<bool> terminate(false);
+
+/** @brief Set the handler for the signal SIG to HANDLER, returning the old
+ * handler, or SIG_ERR on error.
+ * By default `signal' has the BSD semantic.
+ */
+auto signal_handler(int signal) -> void {
+    terminate = true;
+    (void)(signal);
+    std::exit(0);
+}
 
 auto main() -> int {
     /// Creating Buffers
@@ -28,14 +43,19 @@ auto main() -> int {
     /// Creating the logger thread
     Logger logger(logger_buffer, "/home/draco/logs.txt");
 
+    /// Register signal handler
+    std::signal(SIGINT, signal_handler);
+
     /// Starting the threads
     reader.start();
     analyzer.start();
     printer.start();
     logger.start();
 
-    /// I will fix this
-    std::this_thread::sleep_for(std::chrono::seconds(1000));
+    /// Wait until a termination flag is set
+    while (!terminate) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     /// Stopping the threads
     reader.stop();
