@@ -112,7 +112,7 @@ namespace lockfree {
             return true;
         }
 
-        void push(const T &v) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+        [[maybe_unused]] void push(const T &v) noexcept(std::is_nothrow_copy_constructible<T>::value) {
             static_assert(std::is_copy_constructible<T>::value,
                           "T must be copy constructive");
             emplace(v);
