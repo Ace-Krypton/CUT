@@ -23,7 +23,7 @@ public:
     auto read_data() -> void;
     auto get_num_cpus() -> std::size_t;
 
-public:
+private:
     std::mutex _mutex;
     std::thread _thread;
     std::atomic<bool> _exit_flag;

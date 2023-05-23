@@ -60,6 +60,12 @@ static auto BM_Main(benchmark::State& state) -> void {
         logger.stop();
     }
 }
-BENCHMARK(BM_Main);
 
-BENCHMARK_MAIN();
+auto main(int argc, char* argv[]) -> int {
+    /// Run the benchmark
+    benchmark::RegisterBenchmark("BM_Main", BM_Main)->Iterations(1);
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
+
+    return 0;
+}
