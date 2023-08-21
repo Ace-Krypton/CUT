@@ -11,7 +11,7 @@
 #include "SPSCQueue.hpp"
 
 class Reader {
-   public:
+public:
     Reader(
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>&
@@ -25,7 +25,7 @@ class Reader {
     auto read_data() -> void;
     auto get_num_cpus() -> std::size_t;
 
-   private:
+private:
     std::mutex _mutex;
     std::thread _thread;
     std::atomic<bool> _exit_flag;

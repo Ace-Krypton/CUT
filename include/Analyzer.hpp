@@ -13,7 +13,7 @@
 #include "SPSCQueue.hpp"
 
 class Analyzer {
-   public:
+public:
     Analyzer(
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& printer_buffer,
@@ -28,7 +28,7 @@ class Analyzer {
     auto start() -> void;
     auto analyze_data() -> void;
 
-   private:
+private:
     std::mutex _mutex;
     std::thread _thread;
     std::atomic<bool> _exit_flag;

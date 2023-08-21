@@ -31,7 +31,7 @@ class SPSCQueue {
                                 size_t{}))>> : std::true_type {};
 #endif
 
-   public:
+public:
     explicit SPSCQueue(const size_t capacity,
                        const Allocator &allocator = Allocator())
         : capacity_(capacity), allocator_(allocator) {
@@ -182,7 +182,7 @@ class SPSCQueue {
         return capacity_ - 1;
     }
 
-   private:
+private:
 #ifdef __cpp_lib_hardware_interference_size
     static constexpr size_t kCacheLineSize =
         std::hardware_destructive_interference_size;
@@ -192,7 +192,7 @@ class SPSCQueue {
 
     static constexpr size_t kPadding = (kCacheLineSize - 1) / sizeof(T) + 1;
 
-   private:
+private:
     size_t capacity_;
     T *slots_;
 #if defined(__has_cpp_attribute) && __has_cpp_attribute(no_unique_address)

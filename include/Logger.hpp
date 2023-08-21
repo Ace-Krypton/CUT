@@ -8,7 +8,7 @@
 #include "SPSCQueue.hpp"
 
 class Logger {
-   public:
+public:
     Logger(
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
         std::string file_name)
@@ -20,7 +20,7 @@ class Logger {
     auto start() -> void;
     auto logger_thread() -> void;
 
-   private:
+private:
     std::mutex _mutex;
     std::thread _thread;
     std::string _file_name;

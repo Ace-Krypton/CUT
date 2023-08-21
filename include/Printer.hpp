@@ -10,7 +10,7 @@
 #include "SPSCQueue.hpp"
 
 class Printer {
-   public:
+public:
     Printer(
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
         const std::shared_ptr<lockfree::SPSCQueue<std::string>>& printer_buffer)
@@ -26,7 +26,7 @@ class Printer {
     [[maybe_unused]] static auto progress_bar(const std::string& percent)
         -> std::string;
 
-   private:
+private:
     std::mutex _mutex;
     std::thread _thread;
     std::atomic<bool> _exit_flag;
