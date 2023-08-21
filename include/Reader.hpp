@@ -1,29 +1,31 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <thread>
-#include <sstream>
+#include <condition_variable>
 #include <fstream>
 #include <iostream>
-#include <condition_variable>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include "SPSCQueue.hpp"
 
 class Reader {
-public:
-    Reader(const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
-           const std::shared_ptr<lockfree::SPSCQueue<std::string>>& analyzer_buffer)
-            : _logger_buffer(logger_buffer),
-              _analyzer_buffer(analyzer_buffer),
-              _exit_flag(false) { }
+   public:
+    Reader(
+        const std::shared_ptr<lockfree::SPSCQueue<std::string>>& logger_buffer,
+        const std::shared_ptr<lockfree::SPSCQueue<std::string>>&
+            analyzer_buffer)
+        : _logger_buffer(logger_buffer),
+          _analyzer_buffer(analyzer_buffer),
+          _exit_flag(false) {}
 
     auto stop() -> void;
     auto start() -> void;
     auto read_data() -> void;
     auto get_num_cpus() -> std::size_t;
 
-private:
+   private:
     std::mutex _mutex;
     std::thread _thread;
     std::atomic<bool> _exit_flag;

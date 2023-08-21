@@ -1,12 +1,13 @@
-#include <thread>
-#include <string>
-#include <csignal>
 #include <benchmark/benchmark.h>
 
-#include "../include/Reader.hpp"
+#include <csignal>
+#include <string>
+#include <thread>
+
+#include "../include/Analyzer.hpp"
 #include "../include/Logger.hpp"
 #include "../include/Printer.hpp"
-#include "../include/Analyzer.hpp"
+#include "../include/Reader.hpp"
 
 std::atomic<bool> terminate(false);
 
@@ -20,18 +21,17 @@ static auto BM_Main(benchmark::State& state) -> void {
     while (state.KeepRunning()) {
         /// Creating Buffers
         std::shared_ptr<lockfree::SPSCQueue<std::string>> logger_buffer =
-                std::make_shared<lockfree::SPSCQueue<std::string>>(20);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(20);
         std::shared_ptr<lockfree::SPSCQueue<std::string>> analyzer_buffer =
-                std::make_shared<lockfree::SPSCQueue<std::string>>(30);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(30);
         std::shared_ptr<lockfree::SPSCQueue<std::string>> printer_buffer =
-                std::make_shared<lockfree::SPSCQueue<std::string>>(30);
+            std::make_shared<lockfree::SPSCQueue<std::string>>(30);
 
         /// Creating reader thread
         Reader reader(logger_buffer, analyzer_buffer);
 
         /// Creating the analyzer thread
-        Analyzer analyzer(logger_buffer, printer_buffer,
-                          analyzer_buffer);
+        Analyzer analyzer(logger_buffer, printer_buffer, analyzer_buffer);
 
         /// Creating the printer thread
         Printer printer(logger_buffer, printer_buffer);

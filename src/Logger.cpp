@@ -8,7 +8,7 @@ auto Logger::logger_thread() -> void {
     std::ofstream log_file(_file_name, std::ios::app);
 
     /// Continuously analyze data until an exit flag is set
-    while(!_exit_flag) {
+    while (!_exit_flag) {
         /// Wait for data if data stream is empty
         if (_logger_buffer->empty()) {
             std::unique_lock<std::mutex> lock(_mutex);
@@ -40,8 +40,9 @@ auto Logger::start() -> void {
 /**
  * @brief Stops the Printer thread.
  *
- * This method sets the `_exit_flag` variable to `true`, notifies the condition variable
- * to wake up the thread, and waits for the thread to join before returning.
+ * This method sets the `_exit_flag` variable to `true`, notifies the condition
+ * variable to wake up the thread, and waits for the thread to join before
+ * returning.
  */
 auto Logger::stop() -> void {
     _exit_flag.store(true);

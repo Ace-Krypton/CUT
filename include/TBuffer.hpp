@@ -1,21 +1,22 @@
 #pragma once
 
+#include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <vector>
-#include <memory>
-#include <condition_variable>
 
-template<class T>
+template <class T>
 class TBuffer {
-public:
-    explicit TBuffer(std::size_t size) : _buffer(size), _count(0), _head(0), _tail(0) { };
+   public:
+    explicit TBuffer(std::size_t size)
+        : _buffer(size), _count(0), _head(0), _tail(0){};
 
     [[maybe_unused]] auto empty() -> bool;
     [[maybe_unused]] auto push(T value) -> void;
     [[maybe_unused]] auto pop() -> std::unique_ptr<T>;
     [[maybe_unused]] auto peek() -> std::unique_ptr<T>;
 
-private:
+   private:
     std::mutex _mutex;
     std::size_t _head;
     std::size_t _tail;

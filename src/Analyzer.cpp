@@ -3,8 +3,9 @@
 /**
  * @brief Continuously analyzes CPU data received by the analyzer thread.
  *
- * This function reads CPU data from the analyzer's receive buffer, processes it, and prints the CPU usage
- * for each CPU to the console. It runs continuously until the `_exit_flag` member is set to true.
+ * This function reads CPU data from the analyzer's receive buffer, processes
+ * it, and prints the CPU usage for each CPU to the console. It runs
+ * continuously until the `_exit_flag` member is set to true.
  */
 auto Analyzer::analyze_data() -> void {
     /// Map to store previous CPU data
@@ -44,18 +45,27 @@ auto Analyzer::analyze_data() -> void {
 
             /// Calculate CPU usage based on the current and previous CPU data
             if (!prev_cpu_data.empty()) {
-                for (const auto& [cpu_name, times] : cpu_data) {
-                    const std::vector<std::uint64_t> &prev_times = prev_cpu_data[cpu_name];
+                for (const auto &[cpu_name, times] : cpu_data) {
+                    const std::vector<std::uint64_t> &prev_times =
+                        prev_cpu_data[cpu_name];
                     if (prev_times.size() != times.size()) continue;
                     double total_time = 0;
                     double idle_time = 0;
                     for (std::size_t i = 0; i < times.size(); ++i) {
-                        total_time += static_cast<double>(times[i] - prev_times[i]);
-                        if (i == 3) idle_time = static_cast<double>(times[i] - prev_times[i]);
-                    } if (total_time > 0) {
-                        double cpu_usage_floating = 100.0 * (total_time - idle_time) / total_time;
-                        int cpu_usage_int = static_cast<int>(cpu_usage_floating);
-                        _printer_buffer->push(cpu_name + " usage: " + std::to_string(cpu_usage_int) + "%");
+                        total_time +=
+                            static_cast<double>(times[i] - prev_times[i]);
+                        if (i == 3)
+                            idle_time =
+                                static_cast<double>(times[i] - prev_times[i]);
+                    }
+                    if (total_time > 0) {
+                        double cpu_usage_floating =
+                            100.0 * (total_time - idle_time) / total_time;
+                        int cpu_usage_int =
+                            static_cast<int>(cpu_usage_floating);
+                        _printer_buffer->push(
+                            cpu_name +
+                            " usage: " + std::to_string(cpu_usage_int) + "%");
                     }
                 }
             }
@@ -71,8 +81,9 @@ auto Analyzer::analyze_data() -> void {
 /**
  * @brief Starts the Analyzer thread.
  *
- * This function creates a new thread that continuously analyzes CPU data received by the Analyzer thread
- * and prints the CPU usage for each CPU to the console.
+ * This function creates a new thread that continuously analyzes CPU data
+ * received by the Analyzer thread and prints the CPU usage for each CPU to the
+ * console.
  */
 auto Analyzer::start() -> void {
     _thread = std::thread(&Analyzer::analyze_data, this);
@@ -81,8 +92,8 @@ auto Analyzer::start() -> void {
 /**
  * @brief Stops the Analyzer thread.
  *
- * This function sets the `_exit_flag` member variable to true, notifies the Analyzer thread to wake up, and
- * waits for the thread to join.
+ * This function sets the `_exit_flag` member variable to true, notifies the
+ * Analyzer thread to wake up, and waits for the thread to join.
  */
 auto Analyzer::stop() -> void {
     _exit_flag.store(true);

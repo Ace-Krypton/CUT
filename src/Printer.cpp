@@ -5,8 +5,9 @@
  */
 auto Printer::print_data() -> void {
     /// Continuously analyze data until an exit flag is set
-    while(!_exit_flag) {
-        /// Push a log message to the logger buffer indicating that data is being printed.
+    while (!_exit_flag) {
+        /// Push a log message to the logger buffer indicating that data is
+        /// being printed.
         _logger_buffer->push("Data is being printed");
 
         /// Wait for data if data stream is empty
@@ -34,16 +35,19 @@ auto Printer::print_data() -> void {
  * @param percent Percentage value came from Printer thread.
  * @return final std::string as "|".
  */
-[[maybe_unused]] auto Printer::progress_bar(const std::string &percent) -> std::string {
+[[maybe_unused]] auto Printer::progress_bar(const std::string &percent)
+    -> std::string {
     std::string result = "CPU [";
     int _size = 50;
 
-    int boundaries = static_cast<int>(
-            (std::stof(percent) / 100) * static_cast<float>(_size));
+    int boundaries = static_cast<int>((std::stof(percent) / 100) *
+                                      static_cast<float>(_size));
 
-    for (std::size_t i = 0; i < _size; ++i){
-        if (i <= boundaries) result += "|";
-        else result += " ";
+    for (std::size_t i = 0; i < _size; ++i) {
+        if (i <= boundaries)
+            result += "|";
+        else
+            result += " ";
     }
 
     result += percent.substr(0, 4) + "%]";
@@ -59,13 +63,13 @@ auto Printer::print_data() -> void {
     int xMax;
     [[maybe_unused]] int yMax;
     getmaxyx(stdscr, yMax, xMax);
-    WINDOW * sys_win = newwin(17, xMax - 1, 0, 0);
+    WINDOW *sys_win = newwin(17, xMax - 1, 0, 0);
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_YELLOW, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
 
-    while(!_exit_flag) {
-        //print_data(sys_win);
+    while (!_exit_flag) {
+        // print_data(sys_win);
         wrefresh(sys_win);
         refresh();
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -84,8 +88,9 @@ auto Printer::start() -> void {
 /**
  * @brief Stops the Printer thread.
  *
- * This method sets the `_exit_flag` variable to `true`, notifies the condition variable
- * to wake up the thread, and waits for the thread to join before returning.
+ * This method sets the `_exit_flag` variable to `true`, notifies the condition
+ * variable to wake up the thread, and waits for the thread to join before
+ * returning.
  */
 auto Printer::stop() -> void {
     _exit_flag.store(true);
