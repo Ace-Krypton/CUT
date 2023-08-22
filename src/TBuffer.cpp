@@ -1,7 +1,7 @@
 #include "../include/TBuffer.hpp"
 
 /**
- * @brief Inserts an element into the buffer.
+ * @brief Inserts an value into the buffer.
  * @param value The value to be inserted.
  */
 template <class T>
